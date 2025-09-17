@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Conteúdos - Java Courses</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <style>
+        .content-sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .content-main {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .page-card {
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+        .page-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+        .page-preview {
+            height: 200px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            position: relative;
+        }
+        .page-preview iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            transform: scale(0.3);
+            transform-origin: 0 0;
+            width: 333.33%;
+            height: 333.33%;
+        }
+        .editor-container {
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .code-editor {
+            width: 100%;
+            height: 100%;
+            border: none;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 14px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            resize: none;
+        }
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            transition: all 0.3s ease;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: white !important;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+        }
+        .file-tree {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .file-item {
+            padding: 8px 12px;
+            margin: 2px 0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+        .file-item:hover {
+            background-color: #f8f9fa;
+        }
+        .file-item.active {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+        .file-icon {
+            margin-right: 8px;
+            width: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 content-sidebar p-4">
+                <div class="d-flex align-items-center mb-4">
+                    <i class="fas fa-file-code fa-2x me-3"></i>
+                    <h4 class="mb-0">Gerenciador</h4>
+                </div>
+                
+                <nav class="nav flex-column">
+                    <a class="nav-link active mb-2" href="#" onclick="showSection('overview')">
+                        <i class="fas fa-th-large me-2"></i>Visão Geral
+                    </a>
+                    <a class="nav-link mb-2" href="#" onclick="showSection('pages')">
+                        <i class="fas fa-file-alt me-2"></i>Páginas
+                    </a>
+                    <a class="nav-link mb-2" href="#" onclick="showSection('editor')">
+                        <i class="fas fa-code me-2"></i>Editor
+                    </a>
+                    <a class="nav-link mb-2" href="#" onclick="showSection('media')">
+                        <i class="fas fa-images me-2"></i>Mídia
+                    </a>
+                </nav>
+                
+                <div class="mt-4">
+                    <h6 class="text-uppercase text-light opacity-75 mb-3">Arquivos do Projeto</h6>
+                    <div class="file-tree">
+                        <div class="file-item" onclick="loadFile('index.html')">
+                            <i class="fas fa-home file-icon"></i>
+                            <span>index.html</span>
+                        </div>
+                        <div class="file-item" onclick="loadFile('content/pp1.html')">
+                            <i class="fas fa-file-code file-icon"></i>
+                            <span>pp1.html</span>
+                        </div>
+                        <div class="file-item" onclick="loadFile('content/pp2.html')">
+                            <i class="fas fa-file-code file-icon"></i>
+                            <span>pp2.html</span>
+                        </div>
+                        <div class="file-item" onclick="loadFile('content/pp3.html')">
+                            <i class="fas fa-file-code file-icon"></i>
+                            <span>pp3.html</span>
+                        </div>
+                        <div class="file-item" onclick="loadFile('styles.css')">
+                            <i class="fas fa-palette file-icon"></i>
+                            <span>styles.css</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-auto pt-4">
+                    <a href="index.html" class="btn btn-outline-light w-100 mb-2">
+                        <i class="fas fa-eye me-2"></i>Visualizar Site
+                    </a>
+                    <a href="admin.html" class="btn btn-outline-light w-100">
+                        <i class="fas fa-cog me-2"></i>Painel Admin
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9 content-main p-4">
+                <!-- Overview Section -->
+                <div id="overview" class="content-section active">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fas fa-th-large me-2"></i>Visão Geral do Projeto</h2>
+                        <div>
+                            <button class="btn btn-success me-2" onclick="createNewPage()">
+                                <i class="fas fa-plus me-2"></i>Nova Página
+                            </button>
+                            <button class="btn btn-primary" onclick="saveAllChanges()">
+                                <i class="fas fa-save me-2"></i>Salvar Tudo
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card text-center p-3" style="background: linear-gradient(135deg, #28a745, #20c997); color: white;">
+                                <i class="fas fa-file-alt fa-2x mb-2"></i>
+                                <h4>4</h4>
+                                <p class="mb-0">Páginas HTML</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center p-3" style="background: linear-gradient(135deg, #007bff, #6610f2); color: white;">
+                                <i class="fas fa-palette fa-2x mb-2"></i>
+                                <h4>1</h4>
+                                <p class="mb-0">Arquivo CSS</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center p-3" style="background: linear-gradient(135deg, #fd7e14, #e83e8c); color: white;">
+                                <i class="fas fa-code fa-2x mb-2"></i>
+                                <h4>2</h4>
+                                <p class="mb-0">Arquivos JS</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card text-center p-3" style="background: linear-gradient(135deg, #6f42c1, #e83e8c); color: white;">
+                                <i class="fas fa-images fa-2x mb-2"></i>
+                                <h4>1</h4>
+                                <p class="mb-0">Imagens</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-clock me-2"></i>Atividade Recente</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-edit text-primary me-2"></i>
+                                        <strong>index.html</strong> foi modificado
+                                    </div>
+                                    <small class="text-muted">Agora mesmo</small>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-plus-circle text-success me-2"></i>
+                                        <strong>admin.html</strong> foi criado
+                                    </div>
+                                    <small class="text-muted">5 min atrás</small>
+                                </div>
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-palette text-info me-2"></i>
+                                        <strong>styles.css</strong> foi atualizado
+                                    </div>
+                                    <small class="text-muted">10 min atrás</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pages Section -->
+                <div id="pages" class="content-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fas fa-file-alt me-2"></i>Gerenciar Páginas</h2>
+                        <button class="btn btn-primary" onclick="createNewPage()">
+                            <i class="fas fa-plus me-2"></i>Nova Página
+                        </button>
+                    </div>
+                    
+                    <div class="row" id="pagesContainer">
+                        <div class="col-md-6 mb-4">
+                            <div class="card page-card" onclick="editPage('index.html')">
+                                <div class="position-relative">
+                                    <div class="page-preview">
+                                        <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                            <div class="text-center">
+                                                <i class="fas fa-home fa-3x text-primary mb-2"></i>
+                                                <h5>Página Principal</h5>
+                                                <p class="text-muted">index.html</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-success status-badge">Ativo</span>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Página Principal</h5>
+                                    <p class="card-text">Página inicial com apresentação dos cursos de Java</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">Modificado: hoje</small>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary me-1" onclick="event.stopPropagation(); editPage('index.html')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); previewPage('index.html')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card page-card" onclick="editPage('content/pp1.html')">
+                                <div class="position-relative">
+                                    <div class="page-preview">
+                                        <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                            <div class="text-center">
+                                                <i class="fas fa-graduation-cap fa-3x text-success mb-2"></i>
+                                                <h5>PP1</h5>
+                                                <p class="text-muted">pp1.html</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-warning status-badge">Em Desenvolvimento</span>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Prática de Programação I</h5>
+                                    <p class="card-text">Conteúdo do curso de introdução à programação Java</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">Modificado: ontem</small>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary me-1" onclick="event.stopPropagation(); editPage('content/pp1.html')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); previewPage('content/pp1.html')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card page-card" onclick="editPage('content/pp2.html')">
+                                <div class="position-relative">
+                                    <div class="page-preview">
+                                        <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                            <div class="text-center">
+                                                <i class="fas fa-code fa-3x text-warning mb-2"></i>
+                                                <h5>PP2</h5>
+                                                <p class="text-muted">pp2.html</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-warning status-badge">Em Desenvolvimento</span>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Prática de Programação II</h5>
+                                    <p class="card-text">Estruturas de dados e algoritmos</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">Modificado: 2 dias atrás</small>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary me-1" onclick="event.stopPropagation(); editPage('content/pp2.html')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); previewPage('content/pp2.html')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <div class="card page-card" onclick="editPage('content/pp3.html')">
+                                <div class="position-relative">
+                                    <div class="page-preview">
+                                        <div class="d-flex align-items-center justify-content-center h-100 bg-light">
+                                            <div class="text-center">
+                                                <i class="fas fa-database fa-3x text-danger mb-2"></i>
+                                                <h5>PP3</h5>
+                                                <p class="text-muted">pp3.html</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="badge bg-warning status-badge">Em Desenvolvimento</span>
+                                </div>
+                                <div class="card-body">
+                                    <h5 class="card-title">Prática de Programação III</h5>
+                                    <p class="card-text">Tipos personalizados e persistência</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">Modificado: 3 dias atrás</small>
+                                        <div>
+                                            <button class="btn btn-sm btn-outline-primary me-1" onclick="event.stopPropagation(); editPage('content/pp3.html')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); previewPage('content/pp3.html')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Editor Section -->
+                <div id="editor" class="content-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fas fa-code me-2"></i>Editor de Código</h2>
+                        <div>
+                            <span class="badge bg-info me-2" id="currentFile">Nenhum arquivo selecionado</span>
+                            <button class="btn btn-success me-2" onclick="saveCurrentFile()" id="saveBtn" disabled>
+                                <i class="fas fa-save me-2"></i>Salvar
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="formatCode()">
+                                <i class="fas fa-magic me-2"></i>Formatar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <i class="fas fa-file-code me-2"></i>
+                                        <span id="editorTitle">Selecione um arquivo para editar</span>
+                                    </div>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-secondary" onclick="toggleLineNumbers()">
+                                            <i class="fas fa-list-ol"></i>
+                                        </button>
+                                        <button class="btn btn-outline-secondary" onclick="toggleWordWrap()">
+                                            <i class="fas fa-text-width"></i>
+                                        </button>
+                                        <button class="btn btn-outline-secondary" onclick="increaseFontSize()">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                        <button class="btn btn-outline-secondary" onclick="decreaseFontSize()">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="editor-container">
+                                        <textarea class="code-editor" id="codeEditor" placeholder="Selecione um arquivo na barra lateral para começar a editar..."></textarea>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <small class="text-muted">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                Use Ctrl+S para salvar rapidamente
+                                            </small>
+                                        </div>
+                                        <div class="col-md-6 text-end">
+                                            <small class="text-muted" id="editorStats">
+                                                Linhas: 0 | Caracteres: 0
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Media Section -->
+                <div id="media" class="content-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fas fa-images me-2"></i>Gerenciar Mídia</h2>
+                        <button class="btn btn-primary" onclick="uploadMedia()">
+                            <i class="fas fa-upload me-2"></i>Upload de Arquivo
+                        </button>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card">
+                                <img src="imgs/java.png" class="card-img-top" alt="Java Logo" style="height: 200px; object-fit: cover;">
+                                <div class="card-body">
+                                    <h6 class="card-title">java.png</h6>
+                                    <p class="card-text"><small class="text-muted">Logo do Java usado nos cards</small></p>
+                                    <div class="d-flex justify-content-between">
+                                        <button class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i> Excluir
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <div class="card h-100">
+                                <div class="card-body d-flex align-items-center justify-content-center">
+                                    <div class="text-center text-muted">
+                                        <i class="fas fa-cloud-upload-alt fa-4x mb-3"></i>
+                                        <h5>Arraste arquivos aqui</h5>
+                                        <p>ou clique no botão "Upload de Arquivo" para adicionar novas imagens</p>
+                                        <small>Formatos suportados: JPG, PNG, GIF, SVG</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Visualização da Página</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <iframe id="previewFrame" style="width: 100%; height: 600px; border: none;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+    <script src="content-manager.js"></script>
+</body>
+</html>
